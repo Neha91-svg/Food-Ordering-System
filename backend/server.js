@@ -1,34 +1,35 @@
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
-import 'dotenv/config';
-import foodRouter from "./routes/foodRoute.js";
-import userRouter from "./routes/userRoute.js";
-import cartRouter from "./routes/cartRoute.js";
-import orderRouter from "./routes/orderRoute.js";
+import "dotenv/config";
 
-// App configuration
+import userRoute from "./routes/userRoute.js";
+import restaurantRoute from "./routes/restaurantRoute.js";
+import foodRoute from "./routes/foodRoute.js";
+import cartRoute from "./routes/cartRoute.js";
+import addressRoute from "./routes/addressRoute.js";
+import orderRoute from "./routes/orderRoute.js";
+import reviewRoute from "./routes/reviewRoute.js";
+
 const app = express();
-const port = process.env.PORT || 4000;
-
-// Middleware
 app.use(express.json());
-app.use(cors());
+const PORT = process.env.PORT || 4000;
 
-// DB connection
+app.use(cors());
+app.use("/images", express.static("uploads"));
+
 connectDB();
 
-// API endpoints
-app.use("/api/food", foodRouter)
-app.use("/images", express.static("uploads"))
-app.use("/api/user", userRouter)
-app.use("/api/cart", cartRouter)
-app.use("/api/order", orderRouter)
+app.use("/api/user", userRoute);
+app.use("/api/restaurant", restaurantRoute);
+app.use("/api/food", foodRoute);
+app.use("/api/cart", cartRoute);
+app.use("/api/address", addressRoute);
+app.use("/api/order", orderRoute);
+app.use("/api/review", reviewRoute);
 
-app.get("/", (req, res) => {
-    res.send("API is configuring.")
-});
+app.get("/", (req, res) => res.send("API Running"));
 
-app.listen(port, () => {
-    console.log(`Server started on port: ${port}`)
-})
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
