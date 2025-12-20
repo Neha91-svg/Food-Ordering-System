@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import Navbar from "./components/Navbar/Navbar"; 
+import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer";
 import StoreContextProvider, { StoreContext } from "./StoreContext";
 
@@ -37,7 +37,12 @@ const AppRoutes = ({ showLogin, setShowLogin }) => {
         <Route path="/myorders" element={token ? <MyOrders /> : <Navigate to="/" />} />
         <Route path="/restaurants" element={token ? <Restaurants /> : <Navigate to="/" />} />
         <Route path="/address" element={token ? <Address /> : <Navigate to="/" />} />
-        <Route path="/review/:id" element={token ? <Review /> : <Navigate to="/" />} />
+        <Route path="/food/:restaurantId" element={<Food />} />
+        <Route
+          path="/food/:foodId/reviews"
+          element={token ? <Review /> : <Navigate to="/" />}
+        />
+
         <Route path="/food/:restaurantId" element={token ? <Food /> : <Navigate to="/" />} />
 
         {/* Catch-all redirect */}

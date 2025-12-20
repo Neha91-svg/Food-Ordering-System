@@ -66,25 +66,20 @@ export const removeFood = async (req, res) => {
 // ---------------- User -----------------
 export const listFoodByRestaurant = async (req, res) => {
   try {
-    const { restaurantId, page = 1, limit = 20 } = req.query;
+    const { id } = req.params;
 
-    if (!restaurantId || !mongoose.Types.ObjectId.isValid(restaurantId)) {
-      return res.status(400).json({ success: false, message: "Valid restaurantId required" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid restaurant ID" });
     }
 
     const foods = await FoodModel.find({
-      restaurantId,
+      restaurantId: id,
       isAvailable: true,
-    })
-      .sort({ isPopular: -1, createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+    });
 
-    const total = await FoodModel.countDocuments({ restaurantId, isAvailable: true });
-
-    res.json({ success: true, data: foods, total, page: Number(page), pages: Math.ceil(total / limit) });
-  } catch (error) {
-    console.error("Fetch foods error:", error);
+    res.json({ success: true, data: foods });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: "Failed to fetch foods" });
   }
 };

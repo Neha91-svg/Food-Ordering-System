@@ -12,11 +12,12 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        // 2️⃣ Extract token
-        const token = authHeader.split(" ")[1];
-
-        // 3️⃣ Verify token
+        console.log("Authorization header:", req.headers.authorization);
+        const token = req.headers.authorization.split(" ")[1];
+        console.log("Token extracted:", token);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded token:", decoded);
+
 
 
         // 4️⃣ Attach user to request

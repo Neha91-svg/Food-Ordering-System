@@ -1,98 +1,129 @@
-import React from "react";
-import { useContext } from "react";
-import { StoreContext } from "../StoreContext";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { cartItems, food_list, removeFromCart, getTotalCartAmount = () => { }, url = "" } =
-    useContext(StoreContext);
-
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // ✅ Always get / create guestId
+  const getGuestId = () => {
+    let guestId = localStorage.getItem("guestId");
+    if (!guestId) {
+      guestId = "guest_" + Date.now();
+      localStorage.setItem("guestId", guestId);
+    }
+    return guestId;
+  };
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const userId = getGuestId();
+
+        const res = await axios.get(`/api/cart/get/${userId}`);
+
+        if (res.data?.success) {
+          setCartItems(res.data.data || []);
+        } else {
+          setCartItems([]);
+        }
+      } catch (err) {
+        console.error("Fetch cart error:", err);
+        setError("Failed to load cart");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, []);
+
+  if (loading) {
+    return <p className="text-center py-20">Loading cart...</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-600 font-medium">
+        {error}
+      </div>
+    );
+  }
+
+  if (!cartItems.length) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-xl font-semibold">Your cart is empty 🛒</h2>
+        <button
+          onClick={() => navigate("/")}
+          className="mt-4 bg-green-600 text-white px-6 py-2 rounded"
+        >
+          Browse Food
+        </button>
+      </div>
+    );
+  }
+
+  const subtotal = cartItems.reduce(
+    (sum, item) =>
+      sum + (item.foodId?.price || 0) * item.quantity,
+    0
+  );
 
   return (
-    <div className="cart p-4 md:p-8">
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
 
-      <div className="cart-items space-y-4">
-        <div className="cart-items-title grid grid-cols-6 font-semibold text-ternary text-sm md:text-base">
-          <p>Items</p>
-          <p>Title</p>
-          <p>Price</p>
-          <p>Quantity</p>
-          <p>Total</p>
-          <p>Remove</p>
-        </div>
-        <hr className="my-2" />
-        {food_list.map((item, index) => {
-          if (cartItems?.[item._id] > 0) {
-            return (
-              <div key={item._id + index}>
-                <div className="cart-items-item grid grid-cols-6 items-center gap-4 text-sm md:text-base">
-                  <img
-                    src={`${url}/images/${item.image}`}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                  <p>{item.name}</p>
-                  <p>Rs. {item.price}</p>
-                  <p>{cartItems[item._id]}</p>
-                  <p>Rs. {item.price * cartItems?.[item._id]}</p>
-                  <p
-                    onClick={() => removeFromCart(item._id)}
-                    className="text-secondary cursor-pointer font-bold"
-                  >
-                    x
-                  </p>
-                </div>
-                <hr className="my-2" />
-              </div>
-            );
-          }
-        })}
-      </div>
+      {cartItems.map((item) => (
+        <div
+          key={item.foodId?._id}
+          className="flex items-center gap-4 bg-white shadow p-4 rounded mb-3"
+        >
+          <img
+            src={`/images/${item.foodId?.image}`}
+            alt={item.foodId?.name}
+            className="w-20 h-20 object-cover rounded"
+          />
 
-      <div className="cart-bottom flex flex-col lg:flex-row gap-8">
-
-        <div className="cart-total w-full lg:w-1/2 bg-white shadow-[0px_0px_7px_0px_rgba(0,_0,_0,_0.55)] p-6 rounded-lg">
-          <h2 className="text-2xl font-semibold text-ternary">Cart Total</h2>
-          <div className="mt-4 space-y-4">
-            <div className="cart-total-details flex justify-between text-gray-700">
-              <p>Subtotal</p>
-              <p>Rs. {getTotalCartAmount()}</p>
-            </div>
-            <hr />
-            <div className="cart-total-details flex justify-between text-gray-700">
-              <p>Delivery Fee</p>
-              <p>Rs. {getTotalCartAmount() === 0 ? 0 : 60}</p>
-            </div>
-            <hr />
-            <div className="cart-total-details flex justify-between text-ternary">
-              <b>Total</b>
-              <b>
-                Rs. {getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 60}
-              </b>
-            </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">{item.foodId?.name}</h3>
+            <p className="text-gray-600">₹{item.foodId?.price}</p>
+            <p>Qty: {item.quantity}</p>
           </div>
-          <button
-            onClick={() => navigate("/order")}
-            className="w-full mt-4 bg-secondary text-white py-2 px-4 rounded-md"
-          >
-            Proceed to Checkout
-          </button>
+
+          <p className="font-semibold">
+            ₹{item.foodId?.price * item.quantity}
+          </p>
+        </div>
+      ))}
+
+      <div className="mt-6 bg-white shadow p-6 rounded">
+        <div className="flex justify-between mb-2">
+          <span>Subtotal</span>
+          <span>₹{subtotal}</span>
         </div>
 
-        <div className="cart-promocode w-full lg:w-1/2 shadow-[0px_0px_7px_0px_rgba(0,_0,_0,_0.55)] p-6 rounded-lg">
-          <p className="text-ternary">If you have a promo code, Enter it here</p>
-          <div className="cart-promocode-input mt-4 flex gap-4">
-            <input
-              type="text"
-              placeholder="Promo Code"
-              className="flex-1 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-secondary w-full sm:w-auto"
-            />
-            <button className="bg-secondary text-white py-2 px-4 rounded-md">
-              Submit
-            </button>
-          </div>
+        <div className="flex justify-between mb-4">
+          <span>Delivery</span>
+          <span>₹60</span>
         </div>
+
+        <hr />
+
+        <div className="flex justify-between font-bold text-lg mt-4">
+          <span>Total</span>
+          <span>₹{subtotal + 60}</span>
+        </div>
+
+        <button
+          onClick={() => navigate("/order")}
+          className="w-full mt-6 bg-green-600 text-white py-3 rounded text-lg"
+        >
+          Proceed to Checkout
+        </button>
       </div>
     </div>
   );

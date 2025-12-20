@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { BASE_URL } from "../config";
+import { useNavigate } from "react-router-dom";
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/restaurant/list`);
+        const res = await axios.get("/api/restaurant/list"); // ✅ NO BASE_URL
         setRestaurants(res.data?.data || []);
       } catch (err) {
         console.error("Error fetching restaurants:", err);
@@ -28,14 +30,18 @@ const Restaurants = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-semibold text-ternary mb-4">Restaurants</h1>
+      <h1 className="text-2xl font-semibold mb-4">Restaurants</h1>
 
       {restaurants.length === 0 ? (
         <p>No restaurants available.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {restaurants.map((r) => (
-            <div key={r._id} className="bg-white shadow rounded-lg p-4 hover:shadow-lg transition">
+            <div
+              key={r._id}
+              onClick={() => navigate(`/food/${r._id}`)}
+              className="cursor-pointer bg-white shadow rounded-lg p-4 hover:shadow-lg transition"
+            >
               <h2 className="text-lg font-bold">{r.name}</h2>
               <p>{r.location?.address}</p>
               <p>Cuisines: {r.cuisines?.join(", ")}</p>

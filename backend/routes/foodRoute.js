@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ---------- User ----------
-router.get("/", listFoodByRestaurant); // ?restaurantId=<id>&page=1&limit=20
+router.get("/restaurant/:id", listFoodByRestaurant); // ?restaurantId=<id>&page=1&limit=20
 
 // ---------- Admin ----------
 router.post("/", upload.single("image"), addFood);

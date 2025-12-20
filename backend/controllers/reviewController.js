@@ -1,21 +1,28 @@
-import reviewModel from "../models/Review.js";
-import foodModel from "../models/Food.js";
+import Review from "../models/Review.js";
+import FoodModel from "../models/Food.js";
 
 export const addReview = async (req, res) => {
-    try {
-        const review = await reviewModel.create(req.body);
+    const { foodId, rating, comment } = req.body;
 
-        const reviews = await reviewModel.find({ foodId: req.body.foodId });
-        const avg =
-            reviews.reduce((a, b) => a + b.rating, 0) / reviews.length;
+    const review = await Review.create({
+        foodId,
+        // auth middleware
+        rating,
+        comment,
+    });
 
-        await foodModel.findByIdAndUpdate(req.body.foodId, {
-            rating: avg,
-            totalRatings: reviews.length,
-        });
+    // update food rating
+    await FoodModel.findByIdAndUpdate(foodId, {
+        $inc: { totalRatings: 1 },
+    });
 
-        res.json({ success: true });
-    } catch {
-        res.status(500).json({ success: false });
-    }
+    res.json({ success: true, data: review });
+};
+
+export const getReviewsByFood = async (req, res) => {
+    const reviews = await Review.find({
+        foodId: req.params.foodId,
+    }).populate("userId", "name");
+
+    res.json({ success: true, data: reviews });
 };
