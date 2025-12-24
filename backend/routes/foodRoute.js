@@ -1,9 +1,10 @@
 import express from "express";
 import multer from "multer";
+
 import {
   addFood,
   updateFood,
-  removeFood,
+  deleteFood,
   listFoodByRestaurant,
 } from "../controllers/foodController.js";
 
@@ -18,9 +19,26 @@ const upload = multer({ storage });
 // ---------- User ----------
 router.get("/restaurant/:id", listFoodByRestaurant); // ?restaurantId=<id>&page=1&limit=20
 
-// ---------- Admin ----------
-router.post("/", upload.single("image"), addFood);
-router.put("/:id", upload.single("image"), updateFood);
-router.delete("/", removeFood);
+// ---------- ADMIN ----------
+router.post(
+  "/admin/foods",
+  
+  upload.single("image"),
+  addFood
+);
+
+router.put(
+  "/admin/foods/:id",
+ 
+  upload.single("image"),
+  updateFood
+);
+
+router.delete(
+  "/admin/foods/:id",
+ 
+  deleteFood
+);
+
 
 export default router;

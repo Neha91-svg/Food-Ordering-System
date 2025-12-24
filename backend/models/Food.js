@@ -4,7 +4,7 @@ const foodSchema = new mongoose.Schema(
     {
         restaurantId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "restaurant",
+            ref: "Restaurant",
             required: true,
             index: true,
         },
